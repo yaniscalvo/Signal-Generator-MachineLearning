@@ -1,0 +1,172 @@
+# 📈 ML Signal Generator
+
+A machine learning pipeline for predicting BTC/USDT price direction using technical indicators.
+
+## Overview
+
+This project implements a complete ML workflow to generate trading signals for cryptocurrency markets. It fetches historical candlestick data from Binance, engineers technical features, and trains classification models to predict whether the next candle will close **Up** or **Down**.
+
+## Pipeline Architecture
+
+```
+╔═══════════════════════════════════════════════════════════════════════════════════════╗
+║                                   ML SIGNAL GENERATOR                                 ║
+╚═══════════════════════════════════════════════════════════════════════════════════════╝
+
+  ┌─────────────────────────────────────────────────────────────────────────────────────┐
+  │  📥 DATA INGESTION                                                                  │
+  │                                                                                     │
+  │    ┌──────────────┐       ┌──────────────┐       ┌──────────────┐                  │
+  │    │  Binance API │ ───▶  │ Cache Check  │ ───▶  │   Parquet    │                  │
+  │    │   (Klines)   │       │  (30 min)    │       │    Files     │                  │
+  │    └──────────────┘       └──────────────┘       └──────┬───────┘                  │
+  └────────────────────────────────────────────────────────│───────────────────────────┘
+                                                           │
+                                                           ▼
+  ┌─────────────────────────────────────────────────────────────────────────────────────┐
+  │  🔧 PREPROCESSING                                                                   │
+  │                                                                                     │
+  │    ┌──────────────┐       ┌──────────────┐       ┌──────────────┐                  │
+  │    │    OHLCV     │ ───▶  │   Outlier    │ ───▶  │   Feature    │                  │
+  │    │   Parsing    │       │   Removal    │       │ Engineering  │                  │
+  │    └──────────────┘       └──────────────┘       └──────┬───────┘                  │
+  │                                                         │                          │
+  │    Features: RSI, MACD, ATR, Bollinger Bands, MA10/50, Returns                     │
+  └────────────────────────────────────────────────────────│───────────────────────────┘
+                                                           │
+                                                           ▼
+  ┌─────────────────────────────────────────────────────────────────────────────────────┐
+  │  🤖 MODEL TRAINING                                                                  │
+  │                                                                                     │
+  │    ┌──────────────┐       ┌────────────────────────────────────┐                   │
+  │    │  Train/Test  │       │                                    │                   │
+  │    │    Split     │ ───▶  │  ┌────────────┐   ┌────────────┐  │                   │
+  │    │   (80/20)    │       │  │  Logistic  │   │   Random   │  │                   │
+  │    └──────────────┘       │  │ Regression │   │   Forest   │  │                   │
+  │                           │  └─────┬──────┘   └─────┬──────┘  │                   │
+  │                           │        └────────┬───────┘         │                   │
+  │                           └─────────────────│─────────────────┘                   │
+  └─────────────────────────────────────────────│─────────────────────────────────────┘
+                                                │
+                                                ▼
+  ┌─────────────────────────────────────────────────────────────────────────────────────┐
+  │  📊 EVALUATION & EXPORT                                                             │
+  │                                                                                     │
+  │    ┌──────────────┐       ┌──────────────┐       ┌──────────────┐                  │
+  │    │    Cross     │ ───▶  │    Model     │ ───▶  │    Export    │                  │
+  │    │  Validation  │       │  Selection   │       │  best_model  │                  │
+  │    │  (10-fold)   │       │ (F1 Score)   │       │    .pkl      │                  │
+  │    └──────────────┘       └──────────────┘       └──────────────┘                  │
+  └─────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Features
+
+| Category | Features |
+|----------|----------|
+| **Price Action** | PrevClose, High-Low, Open-Close |
+| **Trend** | MA10, MA50, MACD, MACD Signal, MACD Histogram |
+| **Momentum** | RSI (14), Returns (1, 5, 15 periods) |
+| **Volatility** | ATR (14), Bollinger Bands (Width, %B) |
+| **Volume** | Raw Volume, Log Volume |
+
+## Installation
+
+```bash
+git clone https://github.com/yourusername/ml-signal-generator.git
+cd ml-signal-generator
+pip install -r requirements.txt
+```
+
+### Dependencies
+
+```
+pandas
+numpy
+scikit-learn
+pandas-ta
+python-binance
+matplotlib
+joblib
+pyarrow
+```
+
+## Configuration
+
+```bash
+export BINANCE_API_KEY='your_api_key'
+export BINANCE_API_SECRET='your_api_secret'
+```
+
+> **Note**: Public endpoints work without authentication.
+
+## Usage
+
+### Run the Pipeline
+
+```bash
+jupyter notebook Signal.ipynb
+```
+
+### Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `symbol` | `BTCUSDT` | Trading pair |
+| `interval` | `1m` | Candlestick interval |
+| `lookback_candles` | `50000` | Historical data size |
+| `max_age_minutes` | `30` | Cache TTL |
+
+### Load Trained Model
+
+```python
+from joblib import load
+
+model = load('best_model.pkl')
+prediction = model.predict(features)
+probabilities = model.predict_proba(features)
+```
+
+## Results
+
+**Out-of-sample performance** (~9,500 test samples):
+
+| Model | Accuracy | F1 Score (Up) |
+|-------|----------|---------------|
+| Logistic Regression | 52.5% | **0.570** |
+| Random Forest | 51.0% | 0.538 |
+
+## Project Structure
+
+```
+ml-signal-generator/
+├── Signal.ipynb          # Main pipeline notebook
+├── best_model.pkl        # Trained model
+├── data_cache/           # Cached market data
+│   ├── BTCUSDT_1m.parquet
+│   └── BTCUSDT_1m.meta.json
+├── requirements.txt
+└── README.md
+```
+
+## Technical Details
+
+- **Temporal validation**: 80/20 split without shuffling to prevent look-ahead bias
+- **Cross-validation**: 10-fold TimeSeriesSplit
+- **Class balancing**: Balanced weights for handling imbalanced data
+- **Outlier detection**: IQR-based filtering
+- **Feature scaling**: StandardScaler for Logistic Regression
+
+## Limitations
+
+- Modest accuracy (~52%) typical for short-term price prediction
+- Transaction costs and slippage not modeled
+- Single asset and timeframe
+
+## License
+
+MIT
+
+## Disclaimer
+
+⚠️ **For educational purposes only.** Cryptocurrency trading involves substantial risk. Do not use for actual trading without understanding the risks involved.
