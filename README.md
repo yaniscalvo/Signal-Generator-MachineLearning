@@ -158,3 +158,9 @@ ml-signal-generator/
 - Modest accuracy (~52%) typical for short-term price prediction
 - Transaction costs and slippage not modeled
 - Single asset and timeframe
+
+## 👤 Author
+
+**Yanis Calvo**
+
+- GitHub: [@yaniscalvo](https://github.com/yaniscalvo)
