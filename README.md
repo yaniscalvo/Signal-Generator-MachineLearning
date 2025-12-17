@@ -14,7 +14,7 @@ This project implements a complete ML workflow to generate trading signals for c
 ╚═══════════════════════════════════════════════════════════════════════════════════════╝
 
   ┌────────────────────────────────────────────────────────────────────────────────────┐
-  │  📥 DATA INGESTION                                                                 │
+  │  📥 DATA INGESTION                                                                │
   │                                                                                    │
   │    ┌──────────────┐       ┌──────────────┐       ┌──────────────┐                  │
   │    │  Binance API │ ───▶  │ Cache Check  │ ───▶  │   Parquet    │                  │
@@ -24,7 +24,7 @@ This project implements a complete ML workflow to generate trading signals for c
                                                            │
                                                            ▼
   ┌────────────────────────────────────────────────────────────────────────────────────┐
-  │  🔧 PREPROCESSING                                                                  │
+  │  🔧 PREPROCESSING                                                                 │
   │                                                                                    │
   │    ┌──────────────┐       ┌──────────────┐       ┌──────────────┐                  │
   │    │    OHLCV     │ ───▶  │   Outlier    │ ───▶  │   Feature    │                  │
@@ -36,7 +36,7 @@ This project implements a complete ML workflow to generate trading signals for c
                                                            │
                                                            ▼
   ┌───────────────────────────────────────────────────────────────────────────────────┐
-  │  🤖 MODEL TRAINING                                                                │
+  │  🤖 MODEL TRAINING                                                               │
   │                                                                                   │
   │    ┌──────────────┐       ┌───────────────────────────────────┐                   │
   │    │  Train/Test  │       │                                   │                   │ 
@@ -50,7 +50,7 @@ This project implements a complete ML workflow to generate trading signals for c
                                                 │
                                                 ▼
   ┌────────────────────────────────────────────────────────────────────────────────────┐
-  │  📊 EVALUATION & EXPORT                                                            │
+  │  📊 EVALUATION & EXPORT                                                           │
   │                                                                                    │
   │    ┌──────────────┐       ┌──────────────┐       ┌──────────────┐                  │
   │    │    Cross     │ ───▶  │    Model     │ ───▶  │    Export    │                  │
